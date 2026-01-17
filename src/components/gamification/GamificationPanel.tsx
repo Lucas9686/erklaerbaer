@@ -7,17 +7,102 @@ import type { GamificationStats } from '@/lib/types';
 interface GamificationPanelProps {
   stats: GamificationStats;
   isLevelingUp: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function GamificationPanel({ stats, isLevelingUp }: GamificationPanelProps) {
+export function GamificationPanel({ stats, isLevelingUp, isOpen = false, onClose }: GamificationPanelProps) {
   return (
     <>
+      {/* Mobile Slide-out Panel */}
+      <div className="md:hidden">
+        {/* Backdrop */}
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={onClose}
+        />
+
+        {/* Sliding Panel */}
+        <aside
+          className={`fixed right-0 top-0 bottom-0 w-72 bg-bg-secondary border-l border-border z-50
+                      transform transition-transform duration-300 ease-out ${
+                        isOpen ? 'translate-x-0' : 'translate-x-full'
+                      } ${isLevelingUp ? 'level-up-animation' : ''}`}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-bg-tertiary border border-border
+                       flex items-center justify-center text-text-secondary hover:text-text-primary
+                       hover:bg-bg-primary transition-colors"
+            aria-label="Close panel"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18"/>
+              <path d="M6 6l12 12"/>
+            </svg>
+          </button>
+
+          <div className="h-full flex flex-col p-6 pt-16">
+            {/* Header */}
+            <div className="mb-8">
+              <h2 className="text-xs uppercase tracking-[0.2em] text-text-secondary mb-1">Status</h2>
+              <div className="h-0.5 w-12 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" />
+            </div>
+
+            <div className="flex-1 flex flex-col justify-center space-y-8">
+              <LevelDisplay
+                level={stats.level}
+                title={stats.levelTitle}
+                isAnimating={isLevelingUp}
+              />
+
+              <ProgressBar
+                progress={stats.progress}
+                messagesToNext={stats.messagesToNext}
+              />
+
+              <div className="pt-4 border-t border-border">
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary text-xs uppercase tracking-widest">
+                    Nachrichten
+                  </span>
+                  <span
+                    className="gradient-text text-3xl"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {stats.messageCount}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Decorative element */}
+            <div className="mt-auto pt-8 flex justify-center">
+              <div className="flex gap-2">
+                <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-accent-secondary animate-pulse" style={{ animationDelay: '0.2s' }} />
+                <div className="w-2 h-2 rounded-full bg-accent-tertiary animate-pulse" style={{ animationDelay: '0.4s' }} />
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
       {/* Desktop Panel */}
       <aside
         className={`hidden md:flex flex-col w-64 lg:w-72 bg-bg-secondary border-l border-border p-6 transition-all duration-300 ${
           isLevelingUp ? 'level-up-animation' : ''
         }`}
       >
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-text-secondary mb-1">Status</h2>
+          <div className="h-0.5 w-12 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" />
+        </div>
+
         <div className="flex-1 flex flex-col justify-center space-y-8">
           <LevelDisplay
             level={stats.level}
@@ -36,7 +121,7 @@ export function GamificationPanel({ stats, isLevelingUp }: GamificationPanelProp
                 Nachrichten
               </span>
               <span
-                className="text-text-primary text-2xl"
+                className="gradient-text text-3xl"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {stats.messageCount}
@@ -45,57 +130,15 @@ export function GamificationPanel({ stats, isLevelingUp }: GamificationPanelProp
           </div>
         </div>
 
-        {/* Decorative claw marks */}
-        <div className="mt-auto pt-8 flex justify-center gap-1 opacity-20">
-          <div className="w-0.5 h-8 bg-accent-primary rotate-[-15deg]" />
-          <div className="w-0.5 h-10 bg-accent-primary" />
-          <div className="w-0.5 h-8 bg-accent-primary rotate-[15deg]" />
+        {/* Decorative element */}
+        <div className="mt-auto pt-8 flex justify-center">
+          <div className="flex gap-2">
+            <div className="w-2 h-2 rounded-full bg-accent-primary animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-accent-secondary animate-pulse" style={{ animationDelay: '0.2s' }} />
+            <div className="w-2 h-2 rounded-full bg-accent-tertiary animate-pulse" style={{ animationDelay: '0.4s' }} />
+          </div>
         </div>
       </aside>
-
-      {/* Mobile Stats Bar - Redesigned */}
-      <div
-        className={`md:hidden bg-bg-secondary/95 backdrop-blur-sm border-b border-border px-4 py-2.5 transition-all duration-300 ${
-          isLevelingUp ? 'level-up-animation' : ''
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          {/* Level Circle */}
-          <div className="relative flex items-center justify-center">
-            <div className={`w-11 h-11 rounded-full bg-bg-tertiary border-2 border-accent-primary flex items-center justify-center transition-transform duration-300 ${isLevelingUp ? 'scale-110' : ''}`}>
-              <span
-                className="text-xl text-accent-primary font-bold"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                {stats.level}
-              </span>
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2">
-              <p
-                className="text-text-primary text-sm font-medium truncate"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                {stats.levelTitle}
-              </p>
-              <span className="text-text-secondary text-xs shrink-0">
-                {stats.messageCount} Nachr.
-              </span>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mt-1.5 h-1 bg-bg-primary rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full transition-all duration-500"
-                style={{ width: `${stats.progress}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }

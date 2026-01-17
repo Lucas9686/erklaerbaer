@@ -10,18 +10,25 @@ export function ProgressBar({ progress, messagesToNext }: ProgressBarProps) {
 
   return (
     <div className="w-full">
-      <div className="h-2 bg-bg-primary border border-border overflow-hidden">
+      {/* Progress bar container */}
+      <div className="relative h-2 bg-bg-primary rounded-full overflow-hidden border border-border">
+        {/* Progress fill with gradient */}
         <div
-          className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-accent-primary via-accent-secondary to-accent-tertiary
+                     transition-all duration-500 ease-out rounded-full"
           style={{ width: `${progress}%` }}
         />
+        {/* Shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
       </div>
-      <p className="text-text-secondary text-xs mt-2 text-center">
+
+      {/* Progress text */}
+      <p className="text-text-secondary text-xs mt-3 text-center">
         {isMaxLevel ? (
-          'Maximales Level erreicht!'
+          <span className="gradient-text font-medium">Maximales Level erreicht!</span>
         ) : (
           <>
-            Noch <span className="text-accent-primary">{messagesToNext}</span>{' '}
+            Noch <span className="gradient-text font-medium">{messagesToNext}</span>{' '}
             {messagesToNext === 1 ? 'Nachricht' : 'Nachrichten'} bis zum nächsten Level
           </>
         )}
