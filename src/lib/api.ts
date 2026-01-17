@@ -1,32 +1,30 @@
-const WEBHOOK_URL = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || '';
-
-interface WebhookResponse {
-  response: string;
+interface ApiResponse {
+  response?: string;
+  error?: string;
 }
 
 export async function sendMessage(message: string, sessionId: string): Promise<string> {
-  if (!WEBHOOK_URL) {
-    throw new Error('Webhook URL nicht konfiguriert');
-  }
-
-  const response = await fetch(WEBHOOK_URL, {
+  const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      body: {
-        message,
-        sessionId,
-      }
+      message,
+      sessionId,
     }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Der Bär schläft gerade... (HTTP ${response.status})`);
+  const data: ApiResponse = await response.json();
+
+  if (!response.ok || data.error) {
+    throw new Error(data.error || `Der Bär schläft gerade... (HTTP ${response.status})`);
   }
 
-  const data: WebhookResponse = await response.json();
+  if (!data.response) {
+    throw new Error('Keine Antwort erhalten');
+  }
+
   return data.response;
 }
 
