@@ -53,37 +53,43 @@ export function GamificationPanel({ stats, isLevelingUp }: GamificationPanelProp
         </div>
       </aside>
 
-      {/* Mobile Stats Bar */}
+      {/* Mobile Stats Bar - Redesigned */}
       <div
-        className={`md:hidden bg-bg-secondary border-b border-border px-4 py-3 transition-all duration-300 ${
+        className={`md:hidden bg-bg-secondary/95 backdrop-blur-sm border-b border-border px-4 py-2.5 transition-all duration-300 ${
           isLevelingUp ? 'level-up-animation' : ''
         }`}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span
-              className="text-3xl text-accent-primary"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              {stats.level}
-            </span>
-            <div>
+        <div className="flex items-center gap-3">
+          {/* Level Circle */}
+          <div className="relative flex items-center justify-center">
+            <div className={`w-11 h-11 rounded-full bg-bg-tertiary border-2 border-accent-primary flex items-center justify-center transition-transform duration-300 ${isLevelingUp ? 'scale-110' : ''}`}>
+              <span
+                className="text-xl text-accent-primary font-bold"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {stats.level}
+              </span>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2">
               <p
-                className="text-text-primary text-sm leading-tight"
+                className="text-text-primary text-sm font-medium truncate"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {stats.levelTitle}
               </p>
-              <p className="text-text-secondary text-xs">
-                {stats.messageCount} Nachrichten
-              </p>
+              <span className="text-text-secondary text-xs shrink-0">
+                {stats.messageCount} Nachr.
+              </span>
             </div>
-          </div>
 
-          <div className="flex-1 max-w-32">
-            <div className="h-1.5 bg-bg-primary border border-border overflow-hidden">
+            {/* Progress Bar */}
+            <div className="mt-1.5 h-1 bg-bg-primary rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary transition-all duration-500"
+                className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full transition-all duration-500"
                 style={{ width: `${stats.progress}%` }}
               />
             </div>

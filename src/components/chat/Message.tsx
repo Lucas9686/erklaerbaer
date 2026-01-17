@@ -14,13 +14,13 @@ export function Message({ message }: MessageProps) {
       className={`message-enter flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div
-        className={`max-w-[80%] px-4 py-3 ${
+        className={`max-w-[85%] md:max-w-[75%] ${
           isUser
-            ? 'bg-accent-muted text-text-primary rounded-tl-sm rounded-tr-xl rounded-br-xl rounded-bl-xl'
-            : 'bg-bg-tertiary text-text-primary border-l-[3px] border-accent-primary'
+            ? 'bg-accent-muted text-text-primary rounded-2xl rounded-br-md px-4 py-2.5'
+            : 'bg-bg-tertiary text-text-primary rounded-2xl rounded-bl-md px-4 py-2.5 border-l-2 border-accent-primary'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+        <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
           {message.content}
         </p>
       </div>
