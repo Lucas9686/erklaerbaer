@@ -6,8 +6,39 @@ interface MessageProps {
   message: MessageType;
 }
 
+type ContentPart = { type: 'text'; content: string } | { type: 'image'; content: string; alt: string };
+
+function parseMessageContent(content: string): ContentPart[] {
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  const parts: ContentPart[] = [];
+
+  let lastIndex = 0;
+  let match;
+
+  while ((match = imageRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      const textContent = content.slice(lastIndex, match.index);
+      if (textContent.trim()) {
+        parts.push({ type: 'text', content: textContent });
+      }
+    }
+    parts.push({ type: 'image', content: match[2], alt: match[1] || 'Bild' });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    const textContent = content.slice(lastIndex);
+    if (textContent.trim()) {
+      parts.push({ type: 'text', content: textContent });
+    }
+  }
+
+  return parts.length > 0 ? parts : [{ type: 'text', content }];
+}
+
 export function Message({ message }: MessageProps) {
   const isUser = message.role === 'user';
+  const parts = parseMessageContent(message.content);
 
   return (
     <div className={`message-enter flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -30,9 +61,21 @@ export function Message({ message }: MessageProps) {
             : 'bg-bg-tertiary text-text-primary rounded-2xl rounded-bl-sm'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
-          {message.content}
-        </p>
+        {parts.map((part, index) =>
+          part.type === 'text' ? (
+            <p key={index} className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+              {part.content}
+            </p>
+          ) : (
+            <img
+              key={index}
+              src={part.content}
+              alt={part.alt}
+              className="rounded-lg max-w-full my-3 cursor-pointer hover:opacity-90 transition-opacity border border-border"
+              loading="lazy"
+            />
+          )
+        )}
       </div>
 
       {/* User avatar */}
