@@ -7,9 +7,56 @@ interface ChatInputProps {
   disabled?: boolean;
 }
 
+// Simple interface for SpeechRecognition
+interface ISpeechRecognition {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: { results: { 0: { 0: { transcript: string } } } }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        setSpeechSupported(true);
+        const recognition = new SpeechRecognition() as ISpeechRecognition;
+        recognition.lang = 'de-DE';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event: { results: { 0: { 0: { transcript: string } } } }) => {
+          const transcript = event.results[0][0].transcript;
+          setInput(prev => prev ? `${prev} ${transcript}` : transcript);
+          setIsListening(false);
+        };
+
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
 
   const handleSend = useCallback(() => {
     if (input.trim() && !disabled) {
@@ -27,6 +74,23 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       handleSend();
     }
   }, [handleSend]);
+
+  const toggleListening = useCallback(() => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {
+        // Already started or other error
+        setIsListening(false);
+      }
+    }
+  }, [isListening]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -61,20 +125,28 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 
             {/* Action buttons */}
             <div className="flex items-center gap-1 pr-2 pb-2">
-              {/* Mic button */}
-              <button
-                type="button"
-                className="w-9 h-9 rounded-full flex items-center justify-center
-                           text-text-secondary hover:text-text-primary hover:bg-bg-tertiary
-                           transition-all duration-150"
-                aria-label="Voice input"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
+              {/* Mic button - only show if supported */}
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  disabled={disabled}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center
+                             transition-all duration-150
+                             ${isListening
+                               ? 'bg-red-500 text-white animate-pulse'
+                               : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+                             }
+                             disabled:opacity-50 disabled:cursor-not-allowed`}
+                  aria-label={isListening ? 'Stop recording' : 'Voice input'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                  </svg>
+                </button>
+              )}
 
               {/* Send button */}
               <button
@@ -105,12 +177,6 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           </div>
         </div>
 
-        {/* Page indicator dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
-          <div className="w-1.5 h-1.5 rounded-full bg-border" />
-          <div className="w-1.5 h-1.5 rounded-full bg-border" />
-        </div>
       </div>
     </div>
   );
