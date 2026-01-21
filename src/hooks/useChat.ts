@@ -7,7 +7,7 @@ import type { Message } from '@/lib/types';
 
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
-  content: 'Na, wieder mal keine Ahnung? Ich bin der Erklärbär. Stell deine Frage – aber erwarte keine Nettigkeiten.',
+  content: 'Servus! Ich bin der Erklärbär. Frag mich alles zum KI-Support-Agenten oder zur Buchhaltungsautomatisierung. Was würdest du gerne wissen? 🧸',
   role: 'assistant',
   timestamp: Date.now(),
 };
